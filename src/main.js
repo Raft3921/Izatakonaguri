@@ -18,10 +18,12 @@ const altActionBtn = document.getElementById('altActionBtn');
 const slotPrevBtn = document.getElementById('slotPrevBtn');
 const slotNextBtn = document.getElementById('slotNextBtn');
 const builderOpenBtn = document.getElementById('builderOpenBtn');
+const touchHintEl = document.getElementById('touchHint');
 
 const isTouchDevice = (typeof window !== 'undefined') && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 if (isTouchDevice) {
   document.body.classList.add('is-touch');
+  requestFullscreenIfNeeded();
 }
 
 const QUALITY_PRESETS = {
@@ -93,6 +95,8 @@ const touchMoveInput = { x: 0, y: 0, strength: 0 };
 let movePointerId = null;
 const touchLookState = { pointerId: null, lastX: 0, lastY: 0 };
 const TOUCH_LOOK_SPEED = 0.0032;
+let fullscreenRequested = false;
+const touchHintsShown = new Set();
 
 function scheduleStructureBreakProcessing() {
   if (structureBreakHandle) return;
@@ -112,6 +116,37 @@ function clampImpulseVector(vec, maxMagnitude = 120) {
     vec.z *= factor;
   }
   return vec;
+}
+
+function requestFullscreenIfNeeded() {
+  if (!isTouchDevice || fullscreenRequested) return;
+  fullscreenRequested = true;
+  const element = document.documentElement;
+  if (element.requestFullscreen) {
+    element.requestFullscreen().catch(() => {
+      fullscreenRequested = false;
+    });
+  } else if (element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else {
+    fullscreenRequested = false;
+  }
+}
+
+function showTouchHint(type) {
+  if (!isTouchDevice) return;
+  if (touchHintsShown.has(type) || !touchHintEl) return;
+  touchHintsShown.add(type);
+  const messages = {
+    'drag-move': '左スティックで移動',
+    'drag-look': '右パッドで視点操作',
+    execute: '中央ボタンでアクション',
+  };
+  touchHintEl.textContent = messages[type] || '操作ヒント';
+  touchHintEl.classList.add('is-visible');
+  setTimeout(() => {
+    touchHintEl.classList.remove('is-visible');
+  }, 1600);
 }
 
 function applyImpulseClamped(body, impulseVec, point = null, maxMagnitude = 120) {
@@ -4341,13 +4376,15 @@ function setupTouchControls() {
       playerBody.wakeUp();
     };
 
-    moveStick.addEventListener('pointerdown', (event) => {
-      event.preventDefault();
-      if (movePointerId !== null) return;
-      movePointerId = event.pointerId;
-      moveStick.setPointerCapture(event.pointerId);
-      updateMoveInput(event);
-    });
+      moveStick.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        requestFullscreenIfNeeded();
+        if (movePointerId !== null) return;
+        movePointerId = event.pointerId;
+        moveStick.setPointerCapture(event.pointerId);
+        updateMoveInput(event);
+        showTouchHint('drag-move');
+      });
 
     moveStick.addEventListener('pointermove', (event) => {
       if (event.pointerId !== movePointerId) return;
@@ -4371,11 +4408,13 @@ function setupTouchControls() {
   if (lookPad) {
     lookPad.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       if (touchLookState.pointerId !== null) return;
       touchLookState.pointerId = event.pointerId;
       touchLookState.lastX = event.clientX;
       touchLookState.lastY = event.clientY;
       lookPad.setPointerCapture(event.pointerId);
+      showTouchHint('drag-look');
     });
 
     lookPad.addEventListener('pointermove', (event) => {
@@ -4404,6 +4443,7 @@ function setupTouchControls() {
   if (jumpBtn) {
     jumpBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       handleJumpInput();
       playerBody.wakeUp();
     });
@@ -4412,6 +4452,7 @@ function setupTouchControls() {
   if (dashBtn) {
     dashBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       keys.add('ShiftLeft');
       playerBody.wakeUp();
     });
@@ -4427,14 +4468,17 @@ function setupTouchControls() {
   if (executeBtn) {
     executeBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       performPrimaryAction();
       playerBody.wakeUp();
+      showTouchHint('execute');
     });
   }
 
   if (modeBtn) {
     modeBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       cycleMode(1);
     });
   }
@@ -4442,6 +4486,7 @@ function setupTouchControls() {
   if (altActionBtn) {
     altActionBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       if (altActionBtn.disabled) return;
       handleSecondaryActionToggle();
     });
@@ -4450,6 +4495,7 @@ function setupTouchControls() {
   if (slotPrevBtn) {
     slotPrevBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       selectSlotRelative(-1);
     });
   }
@@ -4457,6 +4503,7 @@ function setupTouchControls() {
   if (slotNextBtn) {
     slotNextBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       selectSlotRelative(1);
     });
   }
@@ -4464,6 +4511,7 @@ function setupTouchControls() {
   if (builderOpenBtn) {
     builderOpenBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       window.location.href = './builder.html';
     });
   }

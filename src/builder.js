@@ -124,10 +124,12 @@ const builderDownBtn = document.getElementById('builderDownBtn');
 const builderPlaceBtn = document.getElementById('builderPlaceBtn');
 const builderRemoveBtn = document.getElementById('builderRemoveBtn');
 const builderGameBtn = document.getElementById('builderGameBtn');
+const builderHint = document.getElementById('builderTouchHint');
 
 const isTouchDevice = (typeof window !== 'undefined') && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 if (isTouchDevice) {
   document.body.classList.add('is-touch');
+  requestFullscreenIfNeeded();
 }
 
 const ghostMaterial = new THREE.MeshStandardMaterial({
@@ -181,6 +183,38 @@ const touchMoveInput = { x: 0, y: 0, strength: 0 };
 let movePointerId = null;
 const touchLookState = { pointerId: null, lastX: 0, lastY: 0 };
 const TOUCH_LOOK_SPEED = 0.003;
+let fullscreenRequested = false;
+const touchHintsShown = new Set();
+
+function requestFullscreenIfNeeded() {
+  if (!isTouchDevice || fullscreenRequested) return;
+  fullscreenRequested = true;
+  const element = document.documentElement;
+  if (element.requestFullscreen) {
+    element.requestFullscreen().catch(() => {
+      fullscreenRequested = false;
+    });
+  } else if (element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else {
+    fullscreenRequested = false;
+  }
+}
+
+function showTouchHint(type) {
+  if (!isTouchDevice || !builderHint || touchHintsShown.has(type)) return;
+  touchHintsShown.add(type);
+  const messages = {
+    move: '左スティックで移動',
+    look: '右パッドで視点操作',
+    place: '設置ボタンでブロック配置',
+  };
+  builderHint.textContent = messages[type] || 'タッチ操作';
+  builderHint.classList.add('is-visible');
+  setTimeout(() => {
+    builderHint.classList.remove('is-visible');
+  }, 1600);
+}
 
 function setOpacity(alpha, { syncSlider = true } = {}) {
   currentAlpha = Math.max(0, Math.min(1, alpha));
@@ -1571,11 +1605,11 @@ function requestPointerLock() {
 }
 
 if (!isTouchDevice) {
-  pointerLockTarget.addEventListener('mousedown', (event) => {
-    const locked = document.pointerLockElement === pointerLockTarget;
-    if (!locked) return;
-    if (event.button === 0) {
-      placeBlock();
+pointerLockTarget.addEventListener('mousedown', (event) => {
+  const locked = document.pointerLockElement === pointerLockTarget;
+  if (!locked) return;
+  if (event.button === 0) {
+    placeBlock();
     } else if (event.button === 2) {
       deleteBlock();
     }
@@ -1667,10 +1701,12 @@ function setupTouchControls() {
 
     builderMoveStick.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       if (movePointerId !== null) return;
       movePointerId = event.pointerId;
       builderMoveStick.setPointerCapture(event.pointerId);
       updateMove(event);
+      showTouchHint('move');
     });
 
     builderMoveStick.addEventListener('pointermove', (event) => {
@@ -1695,11 +1731,13 @@ function setupTouchControls() {
   if (builderLookPad) {
     builderLookPad.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       if (touchLookState.pointerId !== null) return;
       touchLookState.pointerId = event.pointerId;
       touchLookState.lastX = event.clientX;
       touchLookState.lastY = event.clientY;
       builderLookPad.setPointerCapture(event.pointerId);
+      showTouchHint('look');
     });
 
     builderLookPad.addEventListener('pointermove', (event) => {
@@ -1728,6 +1766,7 @@ function setupTouchControls() {
   if (builderUpBtn) {
     builderUpBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       keys.add('Space');
     });
     const releaseUp = (event) => {
@@ -1742,6 +1781,7 @@ function setupTouchControls() {
   if (builderDownBtn) {
     builderDownBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       keys.add('ShiftLeft');
     });
     const releaseDown = (event) => {
@@ -1756,13 +1796,16 @@ function setupTouchControls() {
   if (builderPlaceBtn) {
     builderPlaceBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       placeBlock();
+      showTouchHint('place');
     });
   }
 
   if (builderRemoveBtn) {
     builderRemoveBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       deleteBlock();
     });
   }
@@ -1770,6 +1813,7 @@ function setupTouchControls() {
   if (builderGameBtn) {
     builderGameBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      requestFullscreenIfNeeded();
       window.location.href = './index.html';
     });
   }

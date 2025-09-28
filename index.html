@@ -159,30 +159,38 @@
         top: 56px;
         left: 50%;
         transform: translateX(-50%);
-        gap: 4px;
-        padding: 6px 10px;
-        border-radius: 12px;
-        background: rgba(15, 23, 42, 0.68);
-        border: 1px solid rgba(148, 163, 184, 0.28);
-        box-shadow: 0 12px 28px rgba(3, 10, 28, 0.45);
+        gap: 2px;
+        padding: 4px 8px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.62);
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        box-shadow: 0 10px 24px rgba(3, 10, 28, 0.38);
+        font-size: 11px;
+      }
+
+      body.is-touch .quality-panel select,
+      body.is-touch .quality-panel input[type="checkbox"] {
+        padding: 2px 4px;
+        font-size: 11px;
+        border-radius: 5px;
       }
 
       body.is-touch #slotsContainer {
         top: auto;
-        bottom: max(28px, 4.5vh);
+        bottom: max(20px, 4vh);
         transform: translateX(-50%);
-        background: rgba(12, 19, 33, 0.68);
-        padding: 10px 14px;
-        border-radius: 16px;
-        border: 1px solid rgba(94, 135, 255, 0.32);
-        backdrop-filter: blur(12px);
-        box-shadow: 0 18px 32px rgba(4, 10, 30, 0.48);
-        gap: 10px;
+        background: rgba(10, 16, 30, 0.72);
+        padding: 6px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(94, 135, 255, 0.28);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 16px 28px rgba(4, 10, 30, 0.42);
+        gap: 6px;
       }
 
       body.is-touch .slot {
-        width: clamp(38px, 8.6vw, 48px);
-        height: clamp(38px, 8.6vw, 48px);
+        width: clamp(30px, 7vw, 40px);
+        height: clamp(30px, 7vw, 40px);
         background: linear-gradient(180deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
         border: 1px solid rgba(78, 124, 255, 0.35);
         border-radius: 12px;
@@ -218,10 +226,10 @@
       .mobile-joystick {
         position: fixed;
         left: max(16px, 4vw);
-        bottom: max(16px, 5.5vh);
-        width: clamp(94px, 18vw, 132px);
-        height: clamp(94px, 18vw, 132px);
-        border-radius: 24px;
+        bottom: max(12px, 4.5vh);
+        width: clamp(80px, 16vw, 116px);
+        height: clamp(80px, 16vw, 116px);
+        border-radius: 20px;
         background: linear-gradient(135deg, rgba(15, 118, 110, 0.32), rgba(37, 99, 235, 0.28));
         border: 1px solid rgba(94, 234, 212, 0.4);
         backdrop-filter: blur(14px);
@@ -232,8 +240,8 @@
       }
 
       .mobile-joystick__thumb {
-        width: 46px;
-        height: 46px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         background: radial-gradient(circle at 30% 30%, rgba(94, 234, 212, 0.86), rgba(59, 130, 246, 0.82));
         border: 1px solid rgba(148, 163, 255, 0.42);
@@ -244,10 +252,10 @@
       .mobile-look {
         position: fixed;
         right: max(16px, 6vw);
-        bottom: max(18px, 6.5vh);
-        width: clamp(128px, 24vw, 176px);
-        height: clamp(128px, 24vw, 176px);
-        border-radius: 28px;
+        bottom: max(14px, 5.2vh);
+        width: clamp(110px, 22vw, 160px);
+        height: clamp(110px, 22vw, 160px);
+        border-radius: 24px;
         background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.22), rgba(7, 11, 23, 0.86));
         border: 1px solid rgba(59, 130, 246, 0.34);
         box-shadow: inset 0 0 28px rgba(37, 99, 235, 0.28), 0 16px 30px rgba(6, 14, 32, 0.55);
@@ -259,22 +267,22 @@
         position: fixed;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
       }
 
       .mobile-buttons--left {
         left: max(18px, 6vw);
-        bottom: max(166px, 29vh);
+        bottom: max(140px, 24vh);
       }
 
       .mobile-buttons button {
         background: linear-gradient(130deg, rgba(15, 118, 110, 0.75), rgba(59, 130, 246, 0.78));
         border: 1px solid rgba(56, 189, 248, 0.55);
-        border-radius: 14px;
-        padding: 9px 16px;
-        font-size: 13px;
+        border-radius: 12px;
+        padding: 7px 14px;
+        font-size: 12px;
         color: #e0f2fe;
-        min-width: 90px;
+        min-width: 76px;
         font-weight: 600;
         text-shadow: 0 2px 6px rgba(4, 12, 22, 0.6);
         box-shadow: 0 16px 30px rgba(6, 14, 26, 0.55);
@@ -288,23 +296,23 @@
       .mobile-action-cluster {
         position: fixed;
         right: max(18px, 6.2vw);
-        bottom: max(168px, 30vh);
+        bottom: max(142px, 24vh);
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 10px;
+        gap: 8px;
       }
 
       .execute-btn {
         background: radial-gradient(circle at 30% 20%, rgba(244, 114, 182, 0.9), rgba(99, 102, 241, 0.92));
-        border: 1px solid rgba(244, 114, 182, 0.5);
+        border: 1px solid rgba(244, 114, 182, 0.48);
         color: #fff;
-        font-size: 15px;
+        font-size: 14px;
         letter-spacing: 0.04em;
-        min-width: 112px;
-        padding: 12px 20px;
-        border-radius: 18px;
-        box-shadow: 0 20px 38px rgba(88, 28, 135, 0.55);
+        min-width: 98px;
+        padding: 9px 16px;
+        border-radius: 16px;
+        box-shadow: 0 18px 32px rgba(88, 28, 135, 0.45);
         font-weight: 700;
       }
 
@@ -315,18 +323,18 @@
 
       .mobile-mini-buttons {
         display: flex;
-        gap: 10px;
+        gap: 8px;
       }
 
       .mobile-mini-buttons button {
         background: rgba(15, 23, 42, 0.82);
-        border: 1px solid rgba(148, 163, 255, 0.55);
-        border-radius: 12px;
-        padding: 8px 12px;
-        font-size: 12px;
-        min-width: 68px;
+        border: 1px solid rgba(148, 163, 255, 0.5);
+        border-radius: 10px;
+        padding: 6px 10px;
+        font-size: 11px;
+        min-width: 58px;
         color: #c7d2fe;
-        box-shadow: 0 12px 24px rgba(8, 16, 40, 0.55);
+        box-shadow: 0 10px 20px rgba(8, 16, 40, 0.45);
       }
 
       .mobile-mini-buttons button:active {
@@ -347,26 +355,26 @@
         top: max(12px, env(safe-area-inset-top, 12px));
         transform: translateX(-50%);
         display: flex;
-        gap: 10px;
+        gap: 6px;
         align-items: center;
       }
 
       .mobile-slot-nav button {
-        width: 42px;
-        height: 42px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         background: rgba(10, 16, 30, 0.82);
         border: 1px solid rgba(59, 130, 246, 0.42);
         color: #f1f5f9;
-        font-size: 16px;
+        font-size: 14px;
         box-shadow: 0 12px 24px rgba(7, 12, 26, 0.55);
       }
 
       .slot-mode-btn {
-        width: 38px;
-        height: 38px;
-        border-radius: 12px;
-        font-size: 18px;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        font-size: 16px;
         background: rgba(15, 118, 110, 0.82);
         border: 1px solid rgba(34, 197, 94, 0.55);
         color: #dcfce7;
@@ -385,9 +393,9 @@
       body.is-touch .mobile-top-buttons {
         position: fixed;
         right: max(14px, 5.5vw);
-        top: max(12px, env(safe-area-inset-top, 12px));
+        top: max(10px, env(safe-area-inset-top, 10px));
         display: flex;
-        gap: 10px;
+        gap: 8px;
         z-index: 1450;
       }
 
@@ -395,10 +403,10 @@
         background: rgba(10, 16, 30, 0.82);
         border: 1px solid rgba(96, 165, 250, 0.5);
         color: #e0f2fe;
-        border-radius: 14px;
-        padding: 8px 12px;
-        font-size: 17px;
-        min-width: 48px;
+        border-radius: 12px;
+        padding: 6px 10px;
+        font-size: 15px;
+        min-width: 42px;
         box-shadow: 0 14px 30px rgba(7, 12, 24, 0.6);
       }
 
@@ -422,6 +430,29 @@
         align-items: center;
         gap: 6px;
         box-shadow: 0 12px 24px rgba(6, 12, 26, 0.42);
+      }
+
+      .touch-hint {
+        position: fixed;
+        left: 50%;
+        bottom: max(64px, 12vh);
+        transform: translateX(-50%);
+        padding: 6px 12px;
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.78);
+        color: #cbd5f5;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        border: 1px solid rgba(148, 163, 255, 0.38);
+        box-shadow: 0 14px 30px rgba(7, 12, 24, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 1500;
+      }
+
+      .touch-hint.is-visible {
+        opacity: 1;
       }
 
       .rotate-notice {
@@ -526,6 +557,7 @@
     <div class="mobile-top-buttons" id="mobileTopButtons">
       <button id="builderOpenBtn">🛠</button>
     </div>
+    <div class="touch-hint" id="touchHint"></div>
 
 
     <!-- Three.js (global) -->
