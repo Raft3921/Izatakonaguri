@@ -146,6 +146,8 @@
       body.is-touch {
         touch-action: none;
         overscroll-behavior: none;
+        background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.18), transparent 55%),
+                    linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(23, 37, 84, 0.92) 50%, rgba(15, 23, 42, 0.98) 100%);
       }
 
       body.is-touch .overlay,
@@ -157,24 +159,40 @@
         top: 56px;
         left: 50%;
         transform: translateX(-50%);
-        gap: 6px;
-        padding: 6px 8px;
+        gap: 4px;
+        padding: 6px 10px;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.68);
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        box-shadow: 0 12px 28px rgba(3, 10, 28, 0.45);
       }
 
       body.is-touch #slotsContainer {
         top: auto;
-        bottom: max(32px, 5vh);
+        bottom: max(28px, 4.5vh);
         transform: translateX(-50%);
-        background: rgba(15, 23, 42, 0.48);
-        padding: 8px 12px;
-        border-radius: 14px;
-        border: 1px solid rgba(148, 163, 184, 0.32);
-        backdrop-filter: blur(8px);
+        background: rgba(12, 19, 33, 0.68);
+        padding: 10px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(94, 135, 255, 0.32);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 18px 32px rgba(4, 10, 30, 0.48);
+        gap: 10px;
       }
 
       body.is-touch .slot {
-        width: clamp(40px, 9vw, 50px);
-        height: clamp(40px, 9vw, 50px);
+        width: clamp(38px, 8.6vw, 48px);
+        height: clamp(38px, 8.6vw, 48px);
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+        border: 1px solid rgba(78, 124, 255, 0.35);
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      body.is-touch .slot.selected {
+        border-color: rgba(148, 163, 255, 0.75);
+        box-shadow: 0 12px 26px rgba(59, 130, 246, 0.45);
+        transform: translateY(-3px);
       }
 
       body.is-touch .builder-btn { display: none; }
@@ -191,44 +209,49 @@
       body.is-touch .mobile-joystick,
       body.is-touch .mobile-look,
       body.is-touch .mobile-buttons button,
-      body.is-touch .mobile-slot-nav button {
+      body.is-touch .mobile-slot-nav button,
+      body.is-touch .mobile-action-cluster button,
+      body.is-touch .mobile-mini-buttons button {
         pointer-events: auto;
       }
 
       .mobile-joystick {
         position: fixed;
-        left: max(14px, 4vw);
-        bottom: max(16px, 6vh);
-        width: clamp(96px, 18vw, 140px);
-        height: clamp(96px, 18vw, 140px);
-        border-radius: 50%;
-        background: rgba(15, 23, 42, 0.38);
-        border: 2px solid rgba(148, 163, 184, 0.35);
-        backdrop-filter: blur(12px);
+        left: max(16px, 4vw);
+        bottom: max(16px, 5.5vh);
+        width: clamp(94px, 18vw, 132px);
+        height: clamp(94px, 18vw, 132px);
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(15, 118, 110, 0.32), rgba(37, 99, 235, 0.28));
+        border: 1px solid rgba(94, 234, 212, 0.4);
+        backdrop-filter: blur(14px);
         display: grid;
         place-items: center;
         touch-action: none;
+        box-shadow: 0 18px 32px rgba(6, 12, 28, 0.55);
       }
 
       .mobile-joystick__thumb {
-        width: 48px;
-        height: 48px;
+        width: 46px;
+        height: 46px;
         border-radius: 50%;
-        background: rgba(59, 130, 246, 0.6);
-        box-shadow: 0 0 16px rgba(59, 130, 246, 0.55);
+        background: radial-gradient(circle at 30% 30%, rgba(94, 234, 212, 0.86), rgba(59, 130, 246, 0.82));
+        border: 1px solid rgba(148, 163, 255, 0.42);
+        box-shadow: 0 0 20px rgba(94, 234, 212, 0.6);
         transition: transform 0.12s ease;
       }
 
       .mobile-look {
         position: fixed;
         right: max(16px, 6vw);
-        bottom: max(20px, 7vh);
-        width: clamp(132px, 24vw, 178px);
-        height: clamp(132px, 24vw, 178px);
-        border-radius: 30px;
-        background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15), rgba(15, 23, 42, 0.5));
-        border: 2px solid rgba(148, 163, 184, 0.32);
-        backdrop-filter: blur(12px);
+        bottom: max(18px, 6.5vh);
+        width: clamp(128px, 24vw, 176px);
+        height: clamp(128px, 24vw, 176px);
+        border-radius: 28px;
+        background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.22), rgba(7, 11, 23, 0.86));
+        border: 1px solid rgba(59, 130, 246, 0.34);
+        box-shadow: inset 0 0 28px rgba(37, 99, 235, 0.28), 0 16px 30px rgba(6, 14, 32, 0.55);
+        backdrop-filter: blur(16px);
         touch-action: none;
       }
 
@@ -236,61 +259,123 @@
         position: fixed;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
 
       .mobile-buttons--left {
-        left: max(16px, 6vw);
-        bottom: max(162px, 30vh);
-      }
-
-      .mobile-buttons--right {
-        right: max(16px, 6vw);
-        bottom: max(162px, 30vh);
+        left: max(18px, 6vw);
+        bottom: max(166px, 29vh);
       }
 
       .mobile-buttons button {
-        background: rgba(15, 23, 42, 0.78);
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        border-radius: 12px;
-        padding: 9px 14px;
+        background: linear-gradient(130deg, rgba(15, 118, 110, 0.75), rgba(59, 130, 246, 0.78));
+        border: 1px solid rgba(56, 189, 248, 0.55);
+        border-radius: 14px;
+        padding: 9px 16px;
         font-size: 13px;
-        color: #f8fafc;
-        min-width: 88px;
-        box-shadow: 0 8px 22px rgba(8, 15, 35, 0.45);
-        backdrop-filter: blur(9px);
+        color: #e0f2fe;
+        min-width: 90px;
+        font-weight: 600;
+        text-shadow: 0 2px 6px rgba(4, 12, 22, 0.6);
+        box-shadow: 0 16px 30px rgba(6, 14, 26, 0.55);
       }
 
       .mobile-buttons button:active {
-        background: rgba(59, 130, 246, 0.88);
-        border-color: rgba(59, 130, 246, 0.75);
+        background: linear-gradient(130deg, rgba(59, 130, 246, 0.95), rgba(94, 234, 212, 0.95));
+        border-color: rgba(165, 243, 252, 0.85);
+      }
+
+      .mobile-action-cluster {
+        position: fixed;
+        right: max(18px, 6.2vw);
+        bottom: max(168px, 30vh);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+      }
+
+      .execute-btn {
+        background: radial-gradient(circle at 30% 20%, rgba(244, 114, 182, 0.9), rgba(99, 102, 241, 0.92));
+        border: 1px solid rgba(244, 114, 182, 0.5);
+        color: #fff;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        min-width: 112px;
+        padding: 12px 20px;
+        border-radius: 18px;
+        box-shadow: 0 20px 38px rgba(88, 28, 135, 0.55);
+        font-weight: 700;
+      }
+
+      .execute-btn:active {
+        background: radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.95), rgba(244, 114, 182, 0.95));
+        border-color: rgba(254, 215, 170, 0.9);
+      }
+
+      .mobile-mini-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .mobile-mini-buttons button {
+        background: rgba(15, 23, 42, 0.82);
+        border: 1px solid rgba(148, 163, 255, 0.55);
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 68px;
+        color: #c7d2fe;
+        box-shadow: 0 12px 24px rgba(8, 16, 40, 0.55);
+      }
+
+      .mobile-mini-buttons button:active {
+        background: rgba(99, 102, 241, 0.9);
+        color: #f8fafc;
+      }
+
+      .mobile-mini-buttons button:disabled {
+        opacity: 0.45;
+        border-color: rgba(148, 163, 255, 0.25);
+        color: rgba(148, 163, 184, 0.6);
+        box-shadow: none;
       }
 
       .mobile-slot-nav {
         position: fixed;
         left: 50%;
-        top: 12px;
+        top: max(12px, env(safe-area-inset-top, 12px));
         transform: translateX(-50%);
         display: flex;
         gap: 10px;
+        align-items: center;
       }
 
       .mobile-slot-nav button {
-        width: 44px;
-        height: 44px;
-        border-radius: 15px;
-        background: rgba(15, 23, 42, 0.88);
-        border: 1px solid rgba(148, 163, 184, 0.45);
-        color: #f8fafc;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(10, 16, 30, 0.82);
+        border: 1px solid rgba(59, 130, 246, 0.42);
+        color: #f1f5f9;
         font-size: 16px;
-        box-shadow: 0 8px 22px rgba(8, 16, 30, 0.5);
+        box-shadow: 0 12px 24px rgba(7, 12, 26, 0.55);
       }
 
-      .mobile-btn-primary {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(94, 234, 212, 0.95));
-        border-color: rgba(148, 163, 184, 0.3);
-        color: #02101f;
-        font-weight: 600;
+      .slot-mode-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        font-size: 18px;
+        background: rgba(15, 118, 110, 0.82);
+        border: 1px solid rgba(34, 197, 94, 0.55);
+        color: #dcfce7;
+        box-shadow: 0 12px 24px rgba(4, 24, 18, 0.55);
+      }
+
+      .slot-mode-btn:active {
+        background: rgba(34, 197, 94, 0.9);
+        color: #052e16;
       }
 
       .mobile-top-buttons {
@@ -299,7 +384,7 @@
 
       body.is-touch .mobile-top-buttons {
         position: fixed;
-        right: max(12px, 5vw);
+        right: max(14px, 5.5vw);
         top: max(12px, env(safe-area-inset-top, 12px));
         display: flex;
         gap: 10px;
@@ -307,33 +392,36 @@
       }
 
       body.is-touch .mobile-top-buttons button {
-        background: rgba(15, 23, 42, 0.78);
-        border: 1px solid rgba(148, 163, 184, 0.42);
-        color: #f8fafc;
-        border-radius: 12px;
-        padding: 8px 10px;
-        font-size: 16px;
-        min-width: 46px;
-        box-shadow: 0 8px 22px rgba(6, 12, 26, 0.5);
+        background: rgba(10, 16, 30, 0.82);
+        border: 1px solid rgba(96, 165, 250, 0.5);
+        color: #e0f2fe;
+        border-radius: 14px;
+        padding: 8px 12px;
+        font-size: 17px;
+        min-width: 48px;
+        box-shadow: 0 14px 30px rgba(7, 12, 24, 0.6);
       }
 
       body.is-touch .mobile-top-buttons button:active {
-        background: rgba(59, 130, 246, 0.82);
-        border-color: rgba(59, 130, 246, 0.72);
+        background: rgba(37, 99, 235, 0.92);
+        border-color: rgba(191, 219, 254, 0.8);
       }
 
       .lock-pointer-btn {
         position: fixed;
         top: 12px;
-        right: 118px;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: rgba(15, 23, 42, 0.82);
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        color: #f8fafc;
+        right: 140px;
+        padding: 8px 14px;
+        border-radius: 12px;
+        background: rgba(10, 16, 30, 0.86);
+        border: 1px solid rgba(96, 165, 250, 0.42);
+        color: #e2e8f0;
         font-size: 13px;
         z-index: 1250;
-        display: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 12px 24px rgba(6, 12, 26, 0.42);
       }
 
       .rotate-notice {
@@ -422,14 +510,16 @@
         <button id="jumpBtn">ジャンプ</button>
         <button id="dashBtn">ダッシュ</button>
       </div>
-      <div class="mobile-buttons mobile-buttons--right">
-        <button class="mobile-btn-primary" id="actionBtn">アクション</button>
-        <button id="modeBtn">♻︎</button>
-        <button id="altActionBtn">第2アクション</button>
+      <div class="mobile-action-cluster" id="mobileActionCluster">
+        <button class="execute-btn" id="executeBtn">実行</button>
+        <div class="mobile-mini-buttons">
+          <button id="altActionBtn">サブ切替</button>
+        </div>
       </div>
       <div class="mobile-slot-nav">
         <button id="slotPrevBtn">◀</button>
         <button id="slotNextBtn">▶</button>
+        <button id="modeBtn" class="slot-mode-btn" title="モード切替">♻︎</button>
       </div>
     </div>
 

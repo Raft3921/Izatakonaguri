@@ -12,7 +12,7 @@ const moveStickThumb = document.getElementById('moveStickThumb');
 const lookPad = document.getElementById('lookPad');
 const jumpBtn = document.getElementById('jumpBtn');
 const dashBtn = document.getElementById('dashBtn');
-const actionBtn = document.getElementById('actionBtn');
+const executeBtn = document.getElementById('executeBtn');
 const modeBtn = document.getElementById('modeBtn');
 const altActionBtn = document.getElementById('altActionBtn');
 const slotPrevBtn = document.getElementById('slotPrevBtn');
@@ -885,6 +885,7 @@ function selectSlot(index) {
   }
 
   updateSlotAppearance();
+  syncTouchLabels();
 }
 
 function selectSlotRelative(offset) {
@@ -962,6 +963,7 @@ function switchMode(mode) {
   }
 
   updateSlotAppearance();
+  syncTouchLabels();
 }
 
 function cycleMode(step = 1) {
@@ -4284,6 +4286,7 @@ if (!isTouchDevice) {
   document.addEventListener('pointerlockerror', () => {
     if (lockBtn) lockBtn.style.display = 'inline-flex';
   });
+  if (lockBtn) lockBtn.style.display = 'inline-flex';
 } else if (lockBtn) {
   lockBtn.style.display = 'none';
 }
@@ -4421,8 +4424,8 @@ function setupTouchControls() {
     dashBtn.addEventListener('pointerleave', releaseDash);
   }
 
-  if (actionBtn) {
-    actionBtn.addEventListener('pointerdown', (event) => {
+  if (executeBtn) {
+    executeBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       performPrimaryAction();
       playerBody.wakeUp();
@@ -4439,6 +4442,7 @@ function setupTouchControls() {
   if (altActionBtn) {
     altActionBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      if (altActionBtn.disabled) return;
       handleSecondaryActionToggle();
     });
   }
@@ -4463,9 +4467,40 @@ function setupTouchControls() {
       window.location.href = './builder.html';
     });
   }
+
+  syncTouchLabels();
 }
 
 setupTouchControls();
+
+function syncTouchLabels() {
+  if (!isTouchDevice) return;
+  if (executeBtn) {
+    if (currentMode === 'attack') {
+      executeBtn.textContent = '攻撃';
+    } else if (currentMode === 'spawn') {
+      executeBtn.textContent = '生成';
+    } else {
+      executeBtn.textContent = '建造';
+    }
+  }
+
+  if (altActionBtn) {
+    let label = 'サブ切替';
+    let disabled = false;
+    if (currentMode === 'attack') {
+      label = attackPage === 0 ? 'サブ武器' : 'メイン武器';
+    } else if (currentMode === 'spawn') {
+      label = 'カテゴリ';
+      disabled = spawnPages.length <= 1;
+    } else {
+      label = '保持';
+      disabled = true;
+    }
+    altActionBtn.textContent = label;
+    altActionBtn.disabled = !!disabled;
+  }
+}
 
 function performPrimaryAction() {
   if (currentMode === 'attack') {
@@ -4508,6 +4543,7 @@ function handleSecondaryActionToggle() {
     spawnPage = (spawnPage + 1) % spawnPages.length;
     updateSlotAppearance();
   }
+  syncTouchLabels();
 }
 
 document.addEventListener('keydown', (e) => {
