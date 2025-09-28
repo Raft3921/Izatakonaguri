@@ -17,6 +17,7 @@ const modeBtn = document.getElementById('modeBtn');
 const altActionBtn = document.getElementById('altActionBtn');
 const slotPrevBtn = document.getElementById('slotPrevBtn');
 const slotNextBtn = document.getElementById('slotNextBtn');
+const builderOpenBtn = document.getElementById('builderOpenBtn');
 
 const isTouchDevice = (typeof window !== 'undefined') && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 if (isTouchDevice) {
@@ -4453,6 +4454,13 @@ function setupTouchControls() {
     slotNextBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       selectSlotRelative(1);
+    });
+  }
+
+  if (builderOpenBtn) {
+    builderOpenBtn.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      window.location.href = './builder.html';
     });
   }
 }

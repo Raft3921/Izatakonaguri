@@ -60,10 +60,10 @@
 
       .mobile-joystick {
         position: fixed;
-        left: max(16px, 4vw);
-        bottom: max(20px, 8vh);
-        width: clamp(120px, 22vw, 164px);
-        height: clamp(120px, 22vw, 164px);
+        left: max(14px, 4vw);
+        bottom: max(16px, 6vh);
+        width: clamp(96px, 18vw, 140px);
+        height: clamp(96px, 18vw, 140px);
         border-radius: 50%;
         background: rgba(15, 23, 42, 0.38);
         border: 2px solid rgba(148, 163, 184, 0.35);
@@ -74,8 +74,8 @@
       }
 
       .mobile-joystick__thumb {
-        width: 42%;
-        height: 42%;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: rgba(56, 189, 248, 0.68);
         box-shadow: 0 0 16px rgba(56, 189, 248, 0.58);
@@ -84,11 +84,11 @@
 
       .mobile-look {
         position: fixed;
-        right: max(18px, 7vw);
-        bottom: max(22px, 8vh);
-        width: clamp(150px, 28vw, 200px);
-        height: clamp(150px, 28vw, 200px);
-        border-radius: 36px;
+        right: max(16px, 6vw);
+        bottom: max(20px, 7vh);
+        width: clamp(132px, 24vw, 178px);
+        height: clamp(132px, 24vw, 178px);
+        border-radius: 30px;
         background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.55));
         border: 2px solid rgba(148, 163, 184, 0.32);
         backdrop-filter: blur(12px);
@@ -99,29 +99,29 @@
         position: fixed;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
       }
 
       .mobile-buttons--left {
-        left: max(18px, 6vw);
-        bottom: max(190px, 32vh);
+        left: max(16px, 6vw);
+        bottom: max(162px, 30vh);
       }
 
       .mobile-buttons--right {
-        right: max(18px, 6vw);
-        bottom: max(190px, 32vh);
+        right: max(16px, 6vw);
+        bottom: max(162px, 30vh);
       }
 
       .mobile-buttons button {
-        background: rgba(15, 23, 42, 0.88);
-        border: 1px solid rgba(148, 163, 184, 0.45);
-        border-radius: 14px;
-        padding: 12px 18px;
-        font-size: 14px;
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 12px;
+        padding: 9px 14px;
+        font-size: 13px;
         color: #f8fafc;
-        min-width: 112px;
-        box-shadow: 0 10px 30px rgba(8, 15, 35, 0.5);
-        backdrop-filter: blur(10px);
+        min-width: 96px;
+        box-shadow: 0 8px 22px rgba(8, 15, 35, 0.45);
+        backdrop-filter: blur(9px);
       }
 
       .mobile-buttons button:active {
@@ -135,6 +135,35 @@
         border-color: rgba(148, 163, 184, 0.3);
         color: #021019;
         font-weight: 600;
+      }
+
+      .mobile-top-buttons {
+        display: none;
+      }
+
+      body.is-touch .mobile-top-buttons {
+        position: fixed;
+        right: max(12px, 5vw);
+        top: max(12px, env(safe-area-inset-top, 12px));
+        display: flex;
+        gap: 10px;
+        z-index: 140;
+      }
+
+      body.is-touch .mobile-top-buttons button {
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.42);
+        color: #f8fafc;
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-size: 16px;
+        min-width: 46px;
+        box-shadow: 0 8px 22px rgba(6, 12, 26, 0.5);
+      }
+
+      body.is-touch .mobile-top-buttons button:active {
+        background: rgba(56, 189, 248, 0.82);
+        border-color: rgba(56, 189, 248, 0.72);
       }
 
       .rotate-notice {
@@ -996,6 +1025,9 @@
         <button class="mobile-btn-primary" id="builderPlaceBtn">設置</button>
         <button id="builderRemoveBtn">削除</button>
       </div>
+    </div>
+    <div class="mobile-top-buttons" id="builderTopButtons">
+      <button id="builderGameBtn">🎮</button>
     </div>
 
     <div class="hud" id="hud">

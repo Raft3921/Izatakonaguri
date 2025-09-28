@@ -123,6 +123,7 @@ const builderUpBtn = document.getElementById('builderUpBtn');
 const builderDownBtn = document.getElementById('builderDownBtn');
 const builderPlaceBtn = document.getElementById('builderPlaceBtn');
 const builderRemoveBtn = document.getElementById('builderRemoveBtn');
+const builderGameBtn = document.getElementById('builderGameBtn');
 
 const isTouchDevice = (typeof window !== 'undefined') && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 if (isTouchDevice) {
@@ -1763,6 +1764,13 @@ function setupTouchControls() {
     builderRemoveBtn.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       deleteBlock();
+    });
+  }
+
+  if (builderGameBtn) {
+    builderGameBtn.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      window.location.href = './index.html';
     });
   }
 }
