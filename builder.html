@@ -1,0 +1,1194 @@
+<!-- File: builder.html -->
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>ブロッククリエイター</title>
+    <style>
+      :root {
+        --phi: 1.618;
+        --base: 16px;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.25);
+        --panel-bg: rgba(15, 23, 42, 0.82);
+        --panel-border: rgba(148, 163, 184, 0.22);
+        --panel-shadow: 0 20px 48px rgba(8, 15, 32, 0.45);
+        --text-main: #e2e8f0;
+        --text-soft: rgba(226, 232, 240, 0.78);
+      }
+      html, body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.12), transparent 50%),
+                    linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+        color: var(--text-main);
+        font-family: "Inter", "Hiragino Kaku Gothic ProN", "Yu Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        letter-spacing: 0.02em;
+      }
+      #app { position: fixed; inset: 0; }
+
+      body.is-touch {
+        touch-action: none;
+        overscroll-behavior: none;
+      }
+
+      body.is-touch .hud,
+      body.is-touch .hud-tab-stack,
+      body.is-touch .palette-panel,
+      body.is-touch #status {
+        display: none;
+      }
+
+      .mobile-ui { display: none; }
+      .rotate-notice { display: none; }
+
+      body.is-touch .mobile-ui {
+        display: block;
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 120;
+      }
+
+      body.is-touch .mobile-joystick,
+      body.is-touch .mobile-look,
+      body.is-touch .mobile-buttons button {
+        pointer-events: auto;
+      }
+
+      .mobile-joystick {
+        position: fixed;
+        left: max(16px, 4vw);
+        bottom: max(20px, 8vh);
+        width: clamp(120px, 22vw, 164px);
+        height: clamp(120px, 22vw, 164px);
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.38);
+        border: 2px solid rgba(148, 163, 184, 0.35);
+        backdrop-filter: blur(12px);
+        display: grid;
+        place-items: center;
+        touch-action: none;
+      }
+
+      .mobile-joystick__thumb {
+        width: 42%;
+        height: 42%;
+        border-radius: 50%;
+        background: rgba(56, 189, 248, 0.68);
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.58);
+        transition: transform 0.12s ease;
+      }
+
+      .mobile-look {
+        position: fixed;
+        right: max(18px, 7vw);
+        bottom: max(22px, 8vh);
+        width: clamp(150px, 28vw, 200px);
+        height: clamp(150px, 28vw, 200px);
+        border-radius: 36px;
+        background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.55));
+        border: 2px solid rgba(148, 163, 184, 0.32);
+        backdrop-filter: blur(12px);
+        touch-action: none;
+      }
+
+      .mobile-buttons {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .mobile-buttons--left {
+        left: max(18px, 6vw);
+        bottom: max(190px, 32vh);
+      }
+
+      .mobile-buttons--right {
+        right: max(18px, 6vw);
+        bottom: max(190px, 32vh);
+      }
+
+      .mobile-buttons button {
+        background: rgba(15, 23, 42, 0.88);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 14px;
+        color: #f8fafc;
+        min-width: 112px;
+        box-shadow: 0 10px 30px rgba(8, 15, 35, 0.5);
+        backdrop-filter: blur(10px);
+      }
+
+      .mobile-buttons button:active {
+        background: rgba(56, 189, 248, 0.92);
+        border-color: rgba(56, 189, 248, 0.82);
+        color: #02101f;
+      }
+
+      .mobile-btn-primary {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(134, 239, 172, 0.95));
+        border-color: rgba(148, 163, 184, 0.3);
+        color: #021019;
+        font-weight: 600;
+      }
+
+      .rotate-notice {
+        position: fixed;
+        inset: 0;
+        background: #020617;
+        color: #e2e8f0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 32px;
+        z-index: 130;
+      }
+
+      .rotate-notice__card {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+        background: rgba(15, 23, 42, 0.92);
+        border-radius: 26px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        padding: 28px 32px;
+        box-shadow: 0 18px 44px rgba(2, 6, 16, 0.62);
+        max-width: 420px;
+      }
+
+      .rotate-notice__icon {
+        font-size: 48px;
+      }
+
+      @media (orientation: portrait) {
+        body.is-touch .rotate-notice { display: flex; }
+        body.is-touch .mobile-ui { display: none; }
+      }
+
+      .crosshair {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 22px;
+        height: 22px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(109, 255, 203, 0.35);
+      }
+      .crosshair::before,
+      .crosshair::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.7);
+      }
+      .crosshair::before {
+        width: 18px;
+        height: 2px;
+      }
+      .crosshair::after {
+        width: 2px;
+        height: 18px;
+      }
+
+      .hud {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: min(960px, 92vw);
+        width: 100%;
+        z-index: 20;
+        transition: transform 0.3s ease, opacity 0.18s ease;
+      }
+
+      .hud-shell {
+        background: rgba(13, 20, 33, 0.88);
+        border: 1px solid var(--panel-border);
+        border-radius: 22px;
+        box-shadow: var(--panel-shadow);
+        padding: 16px 20px;
+        backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        max-height: calc(100vh - 96px);
+        overflow: hidden;
+      }
+
+      .hud.is-collapsing,
+      .hud.is-collapsed {
+        transform: translate(calc(50vw + 220px), 0);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .hud-fold-toggle {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: rgba(8, 18, 36, 0.6);
+        color: rgba(226, 232, 240, 0.85);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        z-index: 2;
+      }
+      .hud-fold-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(4, 14, 32, 0.5);
+      }
+
+      .hud-tab-stack {
+        position: fixed;
+        top: 60px;
+        right: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 25;
+      }
+      .tab-button {
+        width: 54px;
+        height: 54px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(109, 255, 203, 0.85), rgba(76, 245, 255, 0.75));
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: #03131f;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: transform 0.2s ease;
+        box-shadow: 0 12px 26px rgba(6, 16, 32, 0.55);
+      }
+      .tab-button:hover {
+        transform: translateY(-2px);
+      }
+      .tab-button.is-active {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 32px rgba(6, 16, 32, 0.65);
+      }
+
+      .palette-panel {
+        position: fixed;
+        top: 150px;
+        right: 36px;
+        width: 320px;
+        background: rgba(10, 20, 40, 0.82);
+        border-radius: 28px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        box-shadow: 0 28px 60px rgba(6, 14, 32, 0.6);
+        padding: 24px 22px 26px;
+        backdrop-filter: blur(18px);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        transform: translateX(360px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.26s cubic-bezier(0.62, 0.01, 0.26, 1), opacity 0.18s ease;
+        z-index: 24;
+        max-height: calc(100vh - 200px);
+        overflow: hidden;
+      }
+      .palette-panel.is-open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .palette-scroll {
+        overflow-y: auto;
+        padding-right: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        max-height: calc(100% - 100px);
+      }
+
+      .palette-header-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.72);
+      }
+
+      .color-wheel-shell {
+        position: relative;
+        width: 220px;
+        height: 220px;
+        align-self: center;
+      }
+      #colorWheelCanvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: block;
+        cursor: crosshair;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.35);
+        touch-action: none;
+      }
+      #colorSurfaceCanvas {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 150px;
+        height: 150px;
+        transform: translate(-50%, -50%);
+        touch-action: none;
+        cursor: crosshair;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 6px 16px rgba(8, 15, 32, 0.4);
+        pointer-events: auto;
+      }
+      .opacity-slider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .opacity-slider input {
+        flex: 1 1 auto;
+      }
+
+      .current-color-chip {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(15, 28, 52, 0.54);
+        padding: 12px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+      }
+      .current-color-chip span {
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.7);
+      }
+      .current-color-preview {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      }
+
+      .color-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .color-field label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.62);
+        margin-bottom: 6px;
+      }
+      .color-field-row {
+        display: flex;
+        gap: 8px;
+      }
+      .color-field-row input[type="text"] {
+        flex: 1;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        background: rgba(8, 16, 32, 0.6);
+        color: #f8fafc;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      .rgba-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .rgba-grid input {
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        background: rgba(8, 16, 32, 0.6);
+        color: #f8fafc;
+        padding: 6px 8px;
+        font-size: 13px;
+        text-align: center;
+      }
+      .color-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .color-buttons .small,
+      .color-field-row .small {
+        padding: 6px 10px;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+      }
+      #favoriteToggle.active {
+        background: linear-gradient(135deg, rgba(253, 224, 71, 0.9), rgba(250, 204, 21, 0.82));
+        color: #1f2937;
+        border-color: rgba(251, 191, 36, 0.6);
+      }
+      .favorites-section h3 {
+        margin: 0;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.66);
+      }
+      .favorites-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .toggle-field .toggle-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: rgba(226, 232, 240, 0.72);
+      }
+      .toggle-field input[type="checkbox"] {
+        margin-right: 6px;
+      }
+      .quick-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .quick-actions .small {
+        padding: 6px 10px;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+      }
+      .insights {
+        margin-top: 18px;
+        display: grid;
+        gap: 12px;
+      }
+      .insight-block {
+        background: rgba(12, 20, 38, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 16px;
+        padding: 10px 14px;
+      }
+      .insight-label {
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.62);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .insight-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+        color: rgba(226, 232, 240, 0.78);
+      }
+      .insight-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        background: rgba(15, 28, 52, 0.5);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+      }
+      .insight-chip .swatch {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: inline-block;
+        border: 1px solid rgba(15, 23, 42, 0.4);
+      }
+
+      .palette-history {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+        gap: 12px;
+        max-height: 160px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .palette-history button {
+        height: 46px;
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.25);
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+        transition: transform 0.14s ease;
+      }
+      .palette-history button:hover {
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 960px) {
+        .hud-shell {
+          padding: 16px;
+        }
+        .hud-main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .hud {
+          top: 14px;
+          max-width: 96vw;
+        }
+        .hud-shell {
+          max-height: calc(100vh - 70px);
+        }
+        .hud-tab-stack {
+          right: 16px;
+          gap: 10px;
+        }
+        .tab-button {
+          width: 48px;
+          height: 48px;
+        }
+        .palette-panel,
+        .sfx-panel {
+          right: 12px;
+          width: calc(100vw - 28px);
+        }
+        .palette-scroll {
+          max-height: calc(100% - 80px);
+        }
+      }
+
+      .sfx-panel {
+        position: fixed;
+        top: 220px;
+        right: 36px;
+        width: 320px;
+        background: rgba(9, 19, 36, 0.9);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        box-shadow: 0 24px 50px rgba(6, 14, 32, 0.55);
+        padding: 22px 22px 24px;
+        backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        transform: translateX(340px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.24s cubic-bezier(0.62, 0.01, 0.26, 1), opacity 0.18s ease;
+        z-index: 23;
+      }
+      .sfx-panel.is-open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sfx-panel h3 {
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.7);
+      }
+      .sfx-slider {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .sfx-slider label {
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.62);
+      }
+      .sfx-slider input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        border-radius: 999px;
+        background: transparent;
+        outline: none;
+      }
+
+      .hud-header {
+        display: grid;
+        grid-template-columns: var(--phi) 1fr;
+        align-items: center;
+        gap: calc(var(--base) * 1.25);
+      }
+      .brand-block {
+        display: flex;
+        align-items: center;
+        gap: calc(var(--base) * 0.9);
+      }
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(109, 255, 203, 0.85), rgba(108, 212, 255, 0.85));
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        color: #041324;
+        letter-spacing: 0.04em;
+        font-size: 18px;
+      }
+      .brand-title {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .brand-title span:first-child {
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.32em;
+        color: rgba(224, 242, 254, 0.65);
+      }
+      .brand-title span:last-child {
+        font-size: 24px;
+        font-weight: 600;
+        color: #f8fafc;
+      }
+
+      .header-cta {
+        display: flex;
+        justify-content: flex-end;
+        gap: calc(var(--base) * 0.85);
+        align-items: center;
+      }
+
+      .ghost-button,
+      .primary-button {
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: rgba(12, 22, 43, 0.6);
+        color: #e0f2fe;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+      }
+      .ghost-button:hover,
+      .primary-button:hover {
+        border-color: rgba(148, 163, 184, 0.7);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(12, 22, 43, 0.55);
+      }
+      .primary-button {
+        background: linear-gradient(135deg, rgba(109, 255, 203, 0.9), rgba(76, 245, 255, 0.8));
+        color: #03131f;
+      }
+
+      .hud-body {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 6px;
+      }
+      .hud-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .panel {
+        background: rgba(17, 27, 44, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 18px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 0;
+      }
+      .panel h2 {
+        margin: 0;
+        font-size: 17px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.74);
+      }
+      .panel p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-soft);
+      }
+
+      .guidance-list {
+        display: grid;
+        gap: 10px;
+        margin-top: calc(var(--base) * 0.3);
+      }
+      .guidance-item {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: rgba(21, 32, 54, 0.55);
+      }
+      .guidance-icon {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        background: rgba(109, 255, 203, 0.16);
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .controls-grid {
+        display: grid;
+        gap: calc(var(--base) * 0.85);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.7);
+      }
+      .field input[type="number"],
+      .field select,
+      .field textarea {
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        background: rgba(8, 16, 32, 0.6);
+        color: #f8fafc;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      }
+      .field input[type="number"]:focus,
+      .field select:focus {
+        outline: none;
+        border-color: rgba(109, 255, 203, 0.55);
+        box-shadow: 0 0 0 2px rgba(109, 255, 203, 0.2);
+      }
+      .scale-control {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .scale-slider,
+      .opacity-slider input,
+      .sfx-slider input,
+      #cameraFov,
+      #cameraSpeed {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(109,255,203,0.25), rgba(76,245,255,0.25));
+        outline: none;
+        position: relative;
+        overflow: hidden;
+      }
+      .scale-slider::-webkit-slider-runnable-track,
+      .opacity-slider input::-webkit-slider-runnable-track,
+      .sfx-slider input::-webkit-slider-runnable-track,
+      #cameraFov::-webkit-slider-runnable-track,
+      #cameraSpeed::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(109,255,203,0.4), rgba(76,245,255,0.35));
+      }
+      .scale-slider::-webkit-slider-thumb,
+      .opacity-slider input::-webkit-slider-thumb,
+      .sfx-slider input::-webkit-slider-thumb,
+      #cameraFov::-webkit-slider-thumb,
+      #cameraSpeed::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: linear-gradient(180deg, #f8fafc, #cbd5f5);
+        border: 2px solid rgba(15, 23, 42, 0.35);
+        box-shadow: 0 4px 10px rgba(7, 12, 24, 0.35);
+        cursor: pointer;
+      }
+      .scale-slider::-moz-range-thumb,
+      .opacity-slider input::-moz-range-thumb,
+      .sfx-slider input::-moz-range-thumb,
+      #cameraFov::-moz-range-thumb,
+      #cameraSpeed::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: linear-gradient(180deg, #f8fafc, #cbd5f5);
+        border: 2px solid rgba(15, 23, 42, 0.35);
+        box-shadow: 0 4px 10px rgba(7, 12, 24, 0.35);
+        cursor: pointer;
+      }
+      .scale-slider::-moz-range-track,
+      .opacity-slider input::-moz-range-track,
+      .sfx-slider input::-moz-range-track,
+      #cameraFov::-moz-range-track,
+      #cameraSpeed::-moz-range-track {
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(109,255,203,0.4), rgba(76,245,255,0.35));
+      }
+
+      .atmosphere-tips {
+        font-size: 13px;
+        line-height: 1.6;
+        color: rgba(226, 232, 240, 0.62);
+        background: rgba(23, 42, 82, 0.38);
+        padding: 10px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+      }
+
+      .status-dock {
+        position: fixed;
+        right: 36px;
+        bottom: 28px;
+        z-index: 20;
+        pointer-events: none;
+      }
+      .status-line {
+        background: rgba(10, 20, 40, 0.8);
+        border-radius: 999px;
+        padding: 12px 22px;
+        border: 1px solid rgba(109, 255, 203, 0.3);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.78);
+        box-shadow: 0 14px 36px rgba(4, 12, 26, 0.6);
+      }
+
+      .floating-hint {
+        position: fixed;
+        top: 50%;
+        left: 48px;
+        transform: translateY(-50%);
+        writing-mode: vertical-rl;
+        text-transform: uppercase;
+        letter-spacing: 0.6em;
+        color: rgba(148, 210, 255, 0.32);
+        font-size: 15px;
+        pointer-events: none;
+      }
+
+      @media (max-width: 960px) {
+        .hud-header,
+        .hud-main {
+          grid-template-columns: 1fr;
+        }
+        .header-cta {
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .hud {
+          top: 12px;
+          max-width: 95vw;
+        }
+        .hud-shell {
+          padding: calc(var(--base)) calc(var(--base) * 1.1);
+          border-radius: 22px;
+        }
+        .panel {
+          border-radius: 18px;
+        }
+        .status-dock {
+          right: 18px;
+          bottom: 18px;
+        }
+        .floating-hint {
+          display: none;
+        }
+        .hud-tab-stack {
+          right: 18px;
+          gap: 10px;
+        }
+        .tab-button {
+          width: 50px;
+          height: 50px;
+        }
+        .palette-panel {
+          right: 14px;
+          top: auto;
+          bottom: 84px;
+          width: calc(100vw - 32px);
+          transform: translateX(calc(100vw + 40px));
+        }
+        .palette-panel.is-open {
+          transform: translateX(0);
+        }
+        .sfx-panel {
+          right: 14px;
+          top: auto;
+          bottom: 84px;
+          width: calc(100vw - 32px);
+          transform: translateX(calc(100vw + 40px));
+        }
+        .sfx-panel.is-open {
+          transform: translateX(0);
+        }
+        .color-wheel-shell {
+          width: 200px;
+          height: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="rotate-notice" id="rotateNotice">
+      <div class="rotate-notice__card">
+        <div class="rotate-notice__icon">📱↻</div>
+        <div>スマホを横向きにしてブロックを作成してください</div>
+        <small>横画面に切り替えるとタッチ操作が表示されます</small>
+      </div>
+    </div>
+    <div id="app"></div>
+    <div class="mobile-ui" id="builderMobileUI">
+      <div class="mobile-joystick" id="builderMoveStick">
+        <div class="mobile-joystick__thumb" id="builderMoveThumb"></div>
+      </div>
+      <div class="mobile-look" id="builderLookPad"></div>
+      <div class="mobile-buttons mobile-buttons--left">
+        <button id="builderUpBtn">上昇</button>
+        <button id="builderDownBtn">下降</button>
+      </div>
+      <div class="mobile-buttons mobile-buttons--right">
+        <button class="mobile-btn-primary" id="builderPlaceBtn">設置</button>
+        <button id="builderRemoveBtn">削除</button>
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <div class="hud-shell">
+        <button class="hud-fold-toggle" id="hudFoldToggle" aria-label="折り畳む">−</button>
+        <header class="hud-header">
+          <div class="brand-block">
+            <div class="brand-mark">TA</div>
+            <div class="brand-title">
+              <span>Creator Suite</span>
+              <span>いざ、タコ殴り Atelier</span>
+            </div>
+          </div>
+          <div class="header-cta">
+            <button id="importBtn" class="ghost-button">読み込み</button>
+            <button id="exportBtn" class="ghost-button">ダウンロード</button>
+            <button id="clearBtn" class="primary-button">全削除</button>
+            <input id="fileInput" type="file" accept="application/json" style="display:none" />
+          </div>
+        </header>
+
+        <div class="hud-body">
+          <div class="hud-main">
+            <section class="panel">
+              <h2>クリエイティブガイド</h2>
+              <p>ブロックを積み、光を操り、あなただけのアリーナを描き出しましょう。配置のリズムと視線誘導を意識すると作品が引き立ちます。</p>
+              <div class="guidance-list">
+                <div class="guidance-item">
+                  <div class="guidance-icon">1</div>
+                <p>クリックでロック、マウスで視点移動。WASD + Space/Shift で3D空間を自由に移動。</p>
+              </div>
+              <div class="guidance-item">
+                <div class="guidance-icon">2</div>
+                <p>左クリックでブロック設置、右クリックで削除。Qで低速、Eで高速に切り替え。</p>
+              </div>
+              <div class="guidance-item">
+                <div class="guidance-icon">3</div>
+                <p>数字キー 1〜9 でスロットを切替。サイズやカラーを調整して作品に表情を加えましょう。</p>
+              </div>
+            </div>
+            </section>
+
+            <section class="panel">
+              <h2>組み立てコンソール</h2>
+            <div class="controls-grid">
+              <div class="field">
+                <label for="structureSlot">スロット</label>
+                <select id="structureSlot">
+                  <option value="1" selected>スロット1</option><option value="2">スロット2</option><option value="3">スロット3</option>
+                  <option value="4">スロット4</option><option value="5">スロット5</option><option value="6">スロット6</option>
+                  <option value="7">スロット7</option><option value="8">スロット8</option><option value="9">スロット9</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="structureScale">サイズ倍率</label>
+                <div class="scale-control">
+                  <input id="structureScale" type="number" value="1" step="0.1" min="0.1" max="5" />
+                  <input id="scaleRange" class="scale-slider" type="range" value="1" step="0.1" min="0.1" max="5" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="structureName">構造名</label>
+                <input id="structureName" type="text" value="スロット1" maxlength="32" />
+              </div>
+              <div class="field">
+                <label for="cameraFov">視野角</label>
+                <input id="cameraFov" type="range" min="40" max="110" value="72" />
+              </div>
+              <div class="field">
+                <label for="cameraSpeed">移動速度</label>
+                <input id="cameraSpeed" type="range" min="2" max="18" value="9" />
+              </div>
+              <div class="field toggle-field">
+                <label>表示切替</label>
+                <div class="toggle-row">
+                  <label><input type="checkbox" id="gridToggle" checked /> グリッド</label>
+                  <label><input type="checkbox" id="crosshairToggle" checked /> クロスヘア</label>
+                  <label><input type="checkbox" id="highlightToggle" /> カラーブロック強調</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="skyTheme">空のテーマ</label>
+                <select id="skyTheme">
+                  <option value="night">夜明け前</option>
+                  <option value="dawn">朝霧</option>
+                  <option value="noon">青空</option>
+                  <option value="void">虚空</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>ショートカット</label>
+                <div class="quick-actions">
+                  <button id="resetCameraBtn" class="ghost-button small">カメラ初期化</button>
+                  <button id="focusHighlightBtn" class="ghost-button small">最新配置へ移動</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>環境メモ</label>
+                <div class="atmosphere-tips">光源・床面は自動調整されています。陰影の変化を楽しみながら構図を決めましょう。</div>
+              </div>
+            </div>
+            <div class="insights" id="insightsPanel">
+              <div class="insight-block">
+                <span class="insight-label">主要カラー</span>
+                <div class="insight-content" id="dominantColors"></div>
+              </div>
+              <div class="insight-block">
+                <span class="insight-label">ブロック概要</span>
+                <div class="insight-content" id="blockSummary"></div>
+              </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="crosshair" aria-hidden="true"></div>
+    <div class="floating-hint">Design For Impact</div>
+    <div class="status-dock">
+      <div class="status-line" id="status"></div>
+    </div>
+    <input id="colorPicker" type="hidden" value="#f97316" />
+
+      <div class="hud-tab-stack" id="hudTabStack">
+        <button class="tab-button" id="hudTabButton">HUD</button>
+        <button class="tab-button" id="paletteTabButton">COL</button>
+        <button class="tab-button" id="sfxTabButton">MUS</button>
+      </div>
+
+      <div class="palette-panel" id="palettePanel" aria-label="カラーパレット">
+        <div class="palette-header-line">
+          <span>カラースタジオ</span>
+        <span id="paletteHexLabel">#F97316</span>
+      </div>
+      <div class="palette-scroll">
+        <div class="color-wheel-shell">
+          <canvas id="colorWheelCanvas" width="440" height="440"></canvas>
+          <canvas id="colorSurfaceCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="opacity-slider">
+          <span style="font-size:12px; letter-spacing:0.16em; color:rgba(226,232,240,0.7);">不透明度</span>
+          <input type="range" id="opacitySlider" min="0" max="100" value="100" />
+        </div>
+        <div class="current-color-chip">
+          <div class="current-color-preview" id="currentColorPreview"></div>
+          <span>現在の色</span>
+        </div>
+        <div class="color-actions">
+        <div class="color-field">
+          <label for="hexInput">HEX コード</label>
+          <div class="color-field-row">
+            <input id="hexInput" type="text" value="#F97316" maxlength="9" spellcheck="false" />
+            <button id="copyHexBtn" class="ghost-button small">コピー</button>
+            <button id="randomColorBtn" class="ghost-button small">ランダム</button>
+          </div>
+        </div>
+        <div class="color-field">
+          <label>RGBA</label>
+          <div class="rgba-grid">
+              <input id="rgbaR" type="number" min="0" max="255" value="249" aria-label="Red" />
+              <input id="rgbaG" type="number" min="0" max="255" value="115" aria-label="Green" />
+              <input id="rgbaB" type="number" min="0" max="255" value="22" aria-label="Blue" />
+              <input id="rgbaA" type="number" min="0" max="100" value="100" aria-label="Alpha" />
+            </div>
+          </div>
+          <div class="color-buttons">
+            <button id="favoriteToggle" class="primary-button small" title="お気に入りに追加">☆</button>
+            <button id="lightenBtn" class="ghost-button small">明るく</button>
+            <button id="darkenBtn" class="ghost-button small">暗く</button>
+          </div>
+        </div>
+        <div class="favorites-section">
+          <h3>お気に入りカラー</h3>
+          <div class="palette-history" id="pinnedColors" aria-label="お気に入りの色"></div>
+        </div>
+        <div class="palette-history" id="colorHistory" aria-label="最近使った色"></div>
+      </div>
+    </div>
+
+    <div class="sfx-panel" id="sfxPanel" aria-label="サウンド設定">
+      <h3>サウンド設定</h3>
+      <div class="sfx-slider">
+        <label for="buildVolume">ビルド／効果音</label>
+        <input type="range" id="buildVolume" min="0" max="100" value="100" />
+      </div>
+      <div class="sfx-slider">
+        <label for="movementVolume">移動／環境音</label>
+        <input type="range" id="movementVolume" min="0" max="100" value="70" />
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="./src/builder.js"></script>
+  </body>
+</html>

@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>いざタコ殴り - Three.js Prototype</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0a0a0a; color: #eee; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      #app { position: fixed; inset: 0; overflow: hidden; }
+      .overlay { position: fixed; left: 0; right: 0; top: 0; padding: 10px 12px; display: flex; gap: 12px; align-items: center; pointer-events: none; }
+      .hint { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 6px 10px; border-radius: 8px; font-size: 12px; }
+      .center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #bbb; font-size: 14px; text-align: center; }
+      .btn { pointer-events: auto; cursor: pointer; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 14px; border-radius: 10px; font-size: 14px; }
+      
+      /* スロットUI */
+      #slotsContainer { 
+        position: fixed; 
+        top: 20px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        display: flex; 
+        gap: 8px; 
+        z-index: 1000; 
+        pointer-events: none; 
+      }
+      .slot { 
+        width: 50px; 
+        height: 50px; 
+        background: rgba(0, 0, 0, 0.7); 
+        border: 2px solid #444; 
+        border-radius: 8px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        color: #fff; 
+        font-size: 18px; 
+        font-weight: bold; 
+        pointer-events: auto; 
+        cursor: pointer; 
+        transition: all 0.2s ease; 
+      }
+      .slot:hover { 
+        background: rgba(0, 0, 0, 0.9); 
+        border-color: #666; 
+      }
+      .slot.selected { 
+        background: rgba(59, 130, 246, 0.8); 
+        border-color: #3b82f6; 
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); 
+      }
+      .slot .object-icon { 
+        font-size: 24px; 
+        line-height: 1; 
+      }
+
+      .builder-btn {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        padding: 10px 14px;
+        background: rgba(15, 23, 42, 0.82);
+        color: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 10px;
+        font-size: 13px;
+        text-decoration: none;
+        cursor: pointer;
+        z-index: 1200;
+        pointer-events: auto;
+        transition: background 0.2s ease, border-color 0.2s ease;
+      }
+
+      .builder-btn:hover {
+        background: rgba(15, 23, 42, 0.95);
+        border-color: rgba(148, 163, 184, 0.7);
+      }
+
+      .quality-panel {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        display: flex;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        pointer-events: auto;
+        z-index: 1200;
+        font-size: 13px;
+        backdrop-filter: blur(8px);
+      }
+
+      .quality-field {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #f8fafc;
+      }
+
+      .quality-panel select,
+      .quality-panel input[type="checkbox"] {
+        pointer-events: auto;
+        background: #1e293b;
+        color: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 6px;
+        padding: 4px 6px;
+      }
+
+      .quality-panel input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+      }
+
+      .control-strip {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 12px;
+        pointer-events: none;
+        z-index: 1000;
+      }
+
+      .control-strip .btn {
+        pointer-events: auto;
+        font-size: 13px;
+      }
+
+      .crosshair {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 20px;
+        pointer-events: none;
+        z-index: 1300;
+      }
+
+      .mobile-ui { display: none; }
+      .rotate-notice { display: none; }
+
+      body.is-touch {
+        touch-action: none;
+        overscroll-behavior: none;
+      }
+
+      body.is-touch .overlay,
+      body.is-touch .control-strip {
+        display: none;
+      }
+
+      body.is-touch .quality-panel {
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      body.is-touch #slotsContainer {
+        top: auto;
+        bottom: max(48px, 6vh);
+        transform: translateX(-50%);
+        background: rgba(15, 23, 42, 0.55);
+        padding: 10px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        backdrop-filter: blur(10px);
+      }
+
+      body.is-touch .slot {
+        width: clamp(44px, 10vw, 56px);
+        height: clamp(44px, 10vw, 56px);
+      }
+
+      body.is-touch .builder-btn { display: none; }
+
+      body.is-touch .mobile-ui {
+        display: block;
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1400;
+      }
+
+      body.is-touch .mobile-joystick,
+      body.is-touch .mobile-look,
+      body.is-touch .mobile-buttons button,
+      body.is-touch .mobile-slot-nav button {
+        pointer-events: auto;
+      }
+
+      .mobile-joystick {
+        position: fixed;
+        left: max(16px, 4vw);
+        bottom: max(18px, 6vh);
+        width: clamp(120px, 22vw, 164px);
+        height: clamp(120px, 22vw, 164px);
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.38);
+        border: 2px solid rgba(148, 163, 184, 0.35);
+        backdrop-filter: blur(12px);
+        display: grid;
+        place-items: center;
+        touch-action: none;
+      }
+
+      .mobile-joystick__thumb {
+        width: 42%;
+        height: 42%;
+        border-radius: 50%;
+        background: rgba(59, 130, 246, 0.6);
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.55);
+        transition: transform 0.12s ease;
+      }
+
+      .mobile-look {
+        position: fixed;
+        right: max(18px, 7vw);
+        bottom: max(22px, 8vh);
+        width: clamp(150px, 28vw, 200px);
+        height: clamp(150px, 28vw, 200px);
+        border-radius: 36px;
+        background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15), rgba(15, 23, 42, 0.5));
+        border: 2px solid rgba(148, 163, 184, 0.32);
+        backdrop-filter: blur(12px);
+        touch-action: none;
+      }
+
+      .mobile-buttons {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .mobile-buttons--left {
+        left: max(18px, 6vw);
+        bottom: max(190px, 32vh);
+      }
+
+      .mobile-buttons--right {
+        right: max(18px, 6vw);
+        bottom: max(190px, 32vh);
+      }
+
+      .mobile-buttons button {
+        background: rgba(15, 23, 42, 0.84);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 14px;
+        color: #f8fafc;
+        min-width: 112px;
+        box-shadow: 0 10px 30px rgba(8, 15, 35, 0.5);
+        backdrop-filter: blur(10px);
+      }
+
+      .mobile-buttons button:active {
+        background: rgba(59, 130, 246, 0.9);
+        border-color: rgba(59, 130, 246, 0.8);
+      }
+
+      .mobile-slot-nav {
+        position: fixed;
+        left: 50%;
+        top: 12px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 12px;
+      }
+
+      .mobile-slot-nav button {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.88);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: #f8fafc;
+        font-size: 18px;
+        box-shadow: 0 10px 24px rgba(8, 16, 30, 0.55);
+      }
+
+      .mobile-btn-primary {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(94, 234, 212, 0.95));
+        border-color: rgba(148, 163, 184, 0.3);
+        color: #02101f;
+        font-weight: 600;
+      }
+
+      .rotate-notice {
+        position: fixed;
+        inset: 0;
+        background: #020617;
+        color: #e2e8f0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 32px;
+        z-index: 1500;
+      }
+
+      .rotate-notice__card {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+        background: rgba(15, 23, 42, 0.92);
+        border-radius: 26px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        padding: 28px 32px;
+        box-shadow: 0 18px 44px rgba(2, 6, 16, 0.62);
+        max-width: 420px;
+      }
+
+      .rotate-notice__icon {
+        font-size: 48px;
+      }
+
+      @media (orientation: portrait) {
+        body.is-touch .rotate-notice { display: flex; }
+      }
+
+      @media (orientation: portrait) {
+        body.is-touch .mobile-ui { display: none; }
+        body.is-touch .quality-panel { display: none; }
+        body.is-touch #slotsContainer { display: none; }
+      }
+    
+    </style>
+  </head>
+  <body>
+    <div class="rotate-notice" id="rotateNotice">
+      <div class="rotate-notice__card">
+        <div class="rotate-notice__icon">📱↻</div>
+        <div>スマホを横向きにしてプレイしてください</div>
+        <small>横画面に切り替えるとタッチ操作が表示されます</small>
+      </div>
+    </div>
+    <div id="slotsContainer"></div>
+    <div class="quality-panel" id="qualityPanel">
+      <label class="quality-field">
+        <span>画質</span>
+        <select id="qualitySelect">
+          <option value="low">低</option>
+          <option value="medium" selected>中</option>
+          <option value="high">高</option>
+        </select>
+      </label>
+      <label class="quality-field">
+        <span>影</span>
+        <input id="shadowToggle" type="checkbox" checked />
+      </label>
+    </div>
+    <div id="app"></div>
+    <a class="builder-btn" href="./builder.html" target="_blank" rel="noopener">Builder を開く</a>
+    <input id="structuresDirInput" type="file" webkitdirectory multiple style="display:none" />
+    <div class="overlay">
+      <div class="hint">WASD で移動(シフトでダッシュ/ラフト呼び寄せ) / マウスで視点 / 1-9でスロット選択 / Rで攻撃→生成→建造モード切替 / 攻撃モード中は T で第2スロット / Cでラフトに攻撃指示 / 左クリックで実行 / 9番はクリエイティブ(スペース:上/シフト:下) / 建造モード: structures/1.json〜9.json</div>
+    </div>
+    <div class="control-strip">
+      <button class="btn" id="loadStructuresBtn">フォルダから読み込む</button>
+    </div>
+    <div class="crosshair" id="crosshair">+</div>
+
+    <div class="mobile-ui" id="mobileUI">
+      <div class="mobile-joystick" id="moveStick">
+        <div class="mobile-joystick__thumb" id="moveStickThumb"></div>
+      </div>
+      <div class="mobile-look" id="lookPad"></div>
+      <div class="mobile-buttons mobile-buttons--left">
+        <button id="jumpBtn">ジャンプ</button>
+        <button id="dashBtn">ダッシュ</button>
+      </div>
+      <div class="mobile-buttons mobile-buttons--right">
+        <button class="mobile-btn-primary" id="actionBtn">アクション</button>
+        <button id="modeBtn">モード切替</button>
+        <button id="altActionBtn">第2アクション</button>
+      </div>
+      <div class="mobile-slot-nav">
+        <button id="slotPrevBtn">◀</button>
+        <button id="slotNextBtn">▶</button>
+      </div>
+    </div>
+
+
+    <!-- Three.js (global) -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="./assets_base64.js"></script>
+    <!-- Physics: cannon (UMD, global CANNON) -->
+    <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
+    <!-- GSAP (UMD) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <!-- App -->
+    <script src="./src/main.js"></script>
+  </body>
+  </html>
